@@ -1,0 +1,325 @@
+{% extends 'layout.html.twig' %}
+
+{% block layout_title %}Add Movie{% endblock %}
+
+{% block content %}
+    <div style="display: grid; place-items: center;">
+        <h1>Add a New Movie</h1>
+        {{ form_start(form, {'attr': {'class': 'row g-3'}}) }}
+        <div class="col-md-12">
+
+            {# Add an input field for the movie title #}
+            <div class="col-md-12" style="margin-bottom: 25px;">
+                {{ form_label(form.title) }}
+                {{ form_widget(form.title, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.title) }}
+            </div>
+
+            {# Add an input field for the running time #}
+            <div class="col-md-12" style="margin-bottom: 25px;">
+                {{ form_label(form.runningTime) }}
+                {{ form_widget(form.runningTime, {'attr': {'class': 'form-control'}}) }}
+                <p class="text-muted small">Running time in minutes</p>
+                {{ form_errors(form.runningTime) }}
+            </div>
+
+            {# Add an input field for the IMDB ID / Only for movies retrieved from TMDB API #}
+            <div class="col-md-12" style="margin-bottom: 25px;">
+                {#  {{ form_label(form.imdbId)  }}#} {#  Hide the label for the IMDB ID field #}
+                {{ form_widget(form.imdbId, {'attr': {'class': 'form-control', 'style': 'display:none;'}}) }} {#  Hide the input field for the IMDB ID as it is only used for movies fetched form tmdbAPI#}
+                {{ form_errors(form.imdbId) }}
+            </div>
+
+
+            {# Add an input field for the overview #}
+            <div class="col-md-12" style="margin-bottom: 25px;">
+                {{ form_label(form.overview) }}
+                {{ form_widget(form.overview, {'attr': {'class': 'form-control'}}) }}
+                <p class="text-muted small">Max 250 words</p>
+                {{ form_errors(form.overview) }}
+            </div>
+
+
+            {# Add an input field for the directors #}
+            <div class="col-md-12" style="margin-bottom: 25px;">
+                {{ form_label(form.directors) }}
+                <textarea id="directors-list" class="form-control mb-2" readonly aria-label="Directors List"></textarea>
+                {# Add an input field for a director's name #}
+                <input type="text" id="director-name" class="form-control mb-2" placeholder="Enter director's name">
+                {# Add a button to add a director #}
+                <button type="button" id="add-director" class="btn btn-secondary mb-2">Add Director</button>
+                {{ form_widget(form.directors, {'attr': {'style': 'display:none;'}}) }}
+                {{ form_errors(form.directors) }}
+            </div>
+
+            {# Add an input field for the actors #}
+            <div class="col-md-12" style="margin-bottom: 25px;">
+                {{ form_label(form.actors) }}
+                <textarea id="actors-list" class="form-control mb-2" readonly aria-label="Actors List" style="height: 100px;"></textarea>
+                {# Add an input field for an actor's name #}
+                <input type="text" id="actor-name" class="form-control mb-2" placeholder="Enter actor's name">
+                {# Add a button to add an actor #}
+                <button type="button" id="add-actor" class="btn btn-secondary mb-2">Add Actor</button>
+                {{ form_widget(form.actors, {'attr': {'style': 'display:none;'}}) }}
+                {{ form_errors(form.actors) }}
+            </div>
+
+
+            {# Add an input field to upload the poster image #}
+            <div class="col-md-12" style="margin-bottom: 25px;">
+                {{ form_label(form.poster) }}
+                {{ form_widget(form.poster, {'attr': {'class': 'form-control', 'accept': 'image/jpeg, image/png, image/gif'}}) }}
+                <p class="text-muted small">Accepted formats: JPEG, PNG, GIF / Max size 1 GB</p>
+                {{ form_errors(form.poster) }}
+            </div>
+
+
+            {# Add an input field for the poster URL #}
+            <div class="col-md-12" style="margin-bottom: 25px;">
+                {{ form_label(form.posterUrl) }}
+                {{ form_widget(form.posterUrl, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.posterUrl) }}
+            </div>
+
+
+            <div class="col-12 d-flex justify-content-between" style="margin-bottom: 25px;">
+                 {#  Add a button to clear the form#}
+                <button class="btn btn-primary" type="reset">Clear Form</button>
+                {#  Add a button to submit the form#}
+                <button class="btn btn-primary" type="submit">Add Movie</button>
+            </div>
+
+        {{ form_end(form) }}
+    </div>
+{% endblock %}
+
+
+    {% block javascripts %}
+    {{ parent() }}
+
+        <script>
+            // Wait for the DOM to be fully loaded
+            document.addEventListener('DOMContentLoaded', function() {
+                // Get the title input
+                const titleInput = document.querySelector('[id$="_title"]');
+                // Create a new div element for the suggestions dropdown list
+                const suggestionsContainer = document.createElement('div');
+                // Get the poster URL input
+                const posterUrlInput = document.querySelector('[id$="_posterUrl"]');
+                // Get the file input
+                const fileInput = document.querySelector('[id$="_poster"]');
+                // Set the suggestions container style
+                suggestionsContainer.style.position = 'absolute';
+                // Set the top position
+                suggestionsContainer.style.backgroundColor = 'white';
+                // Set the border
+                suggestionsContainer.style.border = '1px solid #ccc';
+                // Set the border radius
+                suggestionsContainer.style.borderTop = 'none';
+                // Set the z-index to 1000
+                suggestionsContainer.style.zIndex = '1000';
+                // Set the width of the suggestions container to the title input width
+                suggestionsContainer.style.width = titleInput.offsetWidth + 'px';
+                // Append the suggestions container to the title input parent
+                titleInput.parentNode.appendChild(suggestionsContainer);
+
+                // Function to clear the suggestions
+                function clearSuggestions() {
+                    // Clear the suggestions container
+                    suggestionsContainer.innerHTML = '';
+                    // Hide the suggestions container
+                    suggestionsContainer.style.display = 'none';
+                }
+
+                // Add event listener to the title input to fetch movie titles
+                titleInput.addEventListener('input', function() {
+                    // Get the title value
+                    const title = this.value;
+                    // Check if the title is more than 2 characters
+                    if (title.length > 2) {
+                        // Fetch the movie titles
+                        fetch(`/search-movie-title?query=${encodeURIComponent(title)}`)
+                            // Parse the JSON response
+                            .then(response => response.json())
+                            // Populate the suggestions container with the data
+                            .then(data => {
+                                // Clear the suggestions
+                                clearSuggestions();
+                                // Check if the data array is not empty
+                                if (data.length) {
+                                    // Display the suggestions container
+                                    suggestionsContainer.style.display = 'block';
+                                    // Loop through the data array
+                                    data.forEach(movie => {
+                                        // Create a new div element
+                                        const option = document.createElement('div');
+                                        // Set the text content to the movie title
+                                        option.textContent = movie.title;
+                                        // Set the padding
+                                        option.style.padding = '5px';
+                                        // Set the cursor to pointer
+                                        option.style.cursor = 'pointer';
+                                        // Add an event listener to set the background color on mouse enter
+                                        option.addEventListener('mouseenter', function() {
+                                            // Set the background color on mouse enter
+                                            this.style.backgroundColor = '#f0f0f0';
+                                        });
+                                        // Add an event listener to remove the background color on mouse leave
+                                        option.addEventListener('mouseleave', function() {
+                                            // Remove the background color on mouse leave
+                                            this.style.backgroundColor = 'white';
+                                        });
+                                        // Add an event listener to set the title input value to the movie title
+                                        option.addEventListener('click', function() {
+                                            // Set the title input value to the movie title
+                                            titleInput.value = movie.title;
+                                            // Clear the suggestions
+                                            clearSuggestions();
+                                            // Fetch and fill the movie details
+                                            fetchAndFillMovieDetails(movie.id);
+                                        });
+                                        // Append the option to the suggestions container
+                                        suggestionsContainer.appendChild(option);
+                                    });
+                                }
+                            })
+                            // Log any errors to the console
+                            .catch(error => console.error('Error fetching movie titles:', error));
+                    } else {
+                        // Clear the suggestions if the title is less than 3 characters
+                        clearSuggestions();
+                    }
+                });
+                // Close the suggestions when clicking outside the input or the suggestions
+                document.addEventListener('click', function(event) {
+                    // Check if the click event target is not the title input or the suggestions container
+                    if (!titleInput.contains(event.target) && !suggestionsContainer.contains(event.target)) {
+                        // Clear the suggestions
+                        clearSuggestions();
+                    }
+                });
+
+                // Function to fetch and fill movie details
+                function fetchAndFillMovieDetails(movieId) {
+                    // Fetch the movie details
+                    fetch(`/get-movie-details?id=${movieId}`)
+                        // Parse the JSON response
+                        .then(response => response.json())
+                        // Populate the text fields with the data
+                        .then(data => {
+
+                            // Populate the hidden fields with the movie details. Hidden fields are used to submit the data to the server and are not the same as the text fields nor are they displayed on the form
+                            // Populate the title hidden field with the movie title
+                            document.querySelector('[id$="_title"]').value = data.title || '';
+                            // Populate the overview hidden field with the movie overview
+                            document.querySelector('[id$="_overview"]').value = data.overview || '';
+                            // Populate the poster URL hidden field with the movie poster URL
+                            document.querySelector('[id$="_posterUrl"]').value = data.poster_path || '';
+                            // Populate the running time hidden field with the movie running time
+                            document.querySelector('[id$="_runningTime"]').value = data.running_time || '';
+                            // Populate the IMDB ID hidden field with the movie IMDB ID
+                            document.querySelector('[id$="_imdbId"]').value = movieId || '';
+
+
+
+
+
+                            // Actors - Convert array to comma-separated string and populate the textarea
+                            const actorsList = document.getElementById('actors-list');
+                            // Check if the actors list textarea exists and the actors array is present
+                            if (actorsList && Array.isArray(data.actors)) {
+                                // Set the value of the actors list textarea to the comma-separated string
+                                actorsList.value = data.actors.join(', ');
+                            // Populate the hidden field of actors with the movie actors
+                            document.querySelector('[id$="_actors"]').value = data.actors.join(', ') || '';
+                            }
+
+                            // Directors - Convert array to comma-separated string and populate the textarea
+                            const directorsList = document.getElementById('directors-list');
+                            // Check if the directors list textarea exists and the directors array is present
+                            if (directorsList && Array.isArray(data.directors)) {
+                                // Set the value of the directors list textarea to the comma-separated string
+                                directorsList.value = data.directors.join(', ');
+                            // Populate the hidden field of directors with the movie directors
+                            document.querySelector('[id$="_directors"]').value = data.directors.join(', ') || '';
+                            }
+
+                            // Handle the file input disable state based on the poster URL presence
+                            toggleFileInputDisabledState();
+
+                        })
+                        // Log any errors to the console
+                        .catch(error => console.error('Error fetching movie details:', error));
+                }
+
+                // Function to disable file input if poster URL is filled
+                function toggleFileInputDisabledState() {
+                    //  Check if the poster URL input has a value
+                    if (posterUrlInput.value.trim()) {
+                        // Disable the file input
+                        fileInput.disabled = true;
+                        // Clear the file input value
+                        fileInput.value = '';
+                    } else {
+                        // Enable the file input
+                        fileInput.disabled = false;
+                    }
+                }
+
+
+                // Add event listener to the poster URL input to disable/enable the file input
+                posterUrlInput.addEventListener('input', toggleFileInputDisabledState);
+
+                // Code for adding actors and directors
+                function addToList(type) {
+                    // Get the name input field
+                    var nameInput = document.getElementById(type + '-name');
+                    // Get the value and trim it
+                    var name = nameInput.value.trim();
+
+                    //remove commas from the name
+                    name = name.replace(/,/g, ' ');
+
+                    // If the name is not empty
+                    if (name) {
+                        // Get the list display textarea
+                        var listDisplay = document.getElementById(type + 's-list');
+                        // Get the hidden field to store the list of actors or directors to be submitted
+                        {#  {{ form.vars.id }} refers to the form ID #}
+                        var hiddenField = document.getElementById('{{ form.vars.id }}_' + type + 's');
+                        // If the list display already has a value, add a comma
+                        if (listDisplay.value) {
+                            // Add a comma
+                            listDisplay.value += ', ';
+                            // Add a comma to the hidden field
+                            hiddenField.value += ',';
+                        }
+                        // Add the name to the list display
+                        listDisplay.value += name;
+                        // Add the name to the hidden field
+                        hiddenField.value += name;
+                        // Clear the name input field
+                        nameInput.value = '';
+                    }
+                }
+
+
+                document.getElementById('add-actor').addEventListener('click', function() {
+                    // Call the addToList function with the actor type
+                    addToList('actor');
+                });
+                // Add event listener to the button to add a director
+                document.getElementById('add-director').addEventListener('click', function() {
+                    // Call the addToList function with the director type
+                    addToList('director');
+                });
+            });
+
+            // add event listener to the button to clear the form
+                document.getElementById('clear').addEventListener('click', function() {
+                    // Reset the form
+                document.getElementById('form').reset();
+            });
+
+        </script>
+    {% endblock %}

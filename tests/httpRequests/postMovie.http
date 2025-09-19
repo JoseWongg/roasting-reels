@@ -1,0 +1,14 @@
+// Test the endpoint to create a new movie
+POST http://localhost:8000/api/v1/movies
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpYXQiOjE3MTE4ODg2NzAsImV4cCI6MTcxMTkzMTg3MCwicm9sZXMiOlsiUk9MRV9VU0VSIl0sInVzZXJuYW1lIjoiai53b25nQG1haWwuY29tIn0.j1uj9bY5i-m2M_x4vfDmDJF2VCHBvHE2ETn-_hXGwWoDHa5jaF6PoVjgb3OKpTy4LqR6ugjYYGbVSXVyfTMGGs20qG7kMZqzVQSwOS6idHiSZOQzzxKRhQQuI8pNntXPAn39TCsc9STxcOFuyje625jBE_WCPH0VDwVcEqp2-93jqEkZrMMCcV-TxUfILAPP_HsC0UNcQpfSXFdc7tELLZtcazpEjB0f9POXzqbpB11fZ3v5p4yMQoFTN1lwf9990qvVWuJHrkIuq86gQ2dS6P8gHpRqp6Yj-OnzE0NvOZZZjCOHdrTO4SFv5doXAMX68zVCKzi-SIQxHho7DRg4cg
+Content-Type: application/json
+
+{
+  "title": "API Test Movie 7",
+  "imdbId": "apitest7",
+  "overview": "This is a movie created via the API post request. Test 7.",
+  "poster": "https://test.com/poster.jpg",
+  "runningTime": 100,
+  "actors": ["Actor 1", "Actor 2", "Actor 3"],
+  "directors": ["Director 1"]
+}

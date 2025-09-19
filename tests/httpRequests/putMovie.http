@@ -1,0 +1,10 @@
+// Test the endpoint to update a movie. Requires ROLE_EDITOR token.
+// Example of email of a user with ROLE_EDITOR:  r.penrose@roastingreels.editor.com
+PUT http://localhost:8000/api/v1/movies/74
+Content-Type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpYXQiOjE3MTE5ODAyMjcsImV4cCI6MTcxMjAyMzQyNywicm9sZXMiOlsiUk9MRV9FRElUT1IiLCJST0xFX1VTRVIiXSwidXNlcm5hbWUiOiJyLnBlbnJvc2VAcm9hc3RpbmdyZWVscy5lZGl0b3IuY29tIn0.oE4gM8LVERI0qi-5pykwMJyAUYRmMwqeOvw9uzn5vZNieyZ03sJF9zC6aNzQa6tcW4TnO8h5pr3WjJD2x_D4lo145pg5Ixk0F4kekHCkmumWcbjH8MKEXsuvb32hcv7L7YfiSA1ug_XBPPMHbqhdqROVXzOfuJplu7fsWsxneoaUONyx507CUqQftMcCwiqu8ls--hnFeBccz4zs-GiuLHgqU2ex9DBpeJ3zpqwmHqy_RTr8pvWHPr9NMdy1SXcH0akGAsjrKuenuY4OY01gOkDJ5m6bGzQfMUkdXSLJk-F813RlJg3iM0TI2tWBpghoaGli50BQ8DNh2M-jRRAXAQ
+
+{
+  "title": "Changed Title 8",
+  "runningTime": 300
+}

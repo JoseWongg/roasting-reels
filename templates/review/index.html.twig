@@ -1,0 +1,38 @@
+{% extends 'layout.html.twig' %}
+
+{% block layout_title %}Add Review{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+
+        <!-- Form -->
+        <h2>Add Review</h2>
+        {{ form_start(form) }}
+
+        <div class="mb-3">
+            {{ form_label(form.reviewTitle) }}
+            {{ form_widget(form.reviewTitle, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.reviewTitle) }}
+        </div>
+
+        <div class="mb-3">
+            {{ form_label(form.reviewText) }}
+            {{ form_widget(form.reviewText, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.reviewText) }}
+        </div>
+
+        <div class="mb-3">
+            {{ form_label(form.score) }}
+            <div style="width: 10%;">
+                {{ form_widget(form.score, {'attr': {'class': 'form-control', 'type': 'range', 'min': 1, 'max': 5, 'id': 'score-input'}}) }}
+            </div>
+            {{ form_errors(form.score) }}
+        </div>
+
+        <div>
+            {{ form_widget(form.save, {'attr': {'class': 'btn btn-primary'}}) }}
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+{% endblock %}

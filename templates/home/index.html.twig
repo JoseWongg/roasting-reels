@@ -1,0 +1,98 @@
+{% extends 'layout.html.twig' %}
+
+{% block layout_title %}Movies{% endblock %}
+
+{% block content %}
+
+    <!-- Flash Messages for successfully sent reviews-->
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success flash-message">
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    <!--Movies-->
+    <div class="container mt-4">
+        <!-- Search box -->
+    <div class="d-flex justify-content-center">
+    <div style="max-width: 500px; width: 50%;">
+        <form method="get" action="{{ path('home') }}" class="mb-4">
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Search by ID or Title" name="search" value="{{ search }}">
+                <button class="btn btn-outline-primary" type="submit">Search</button>
+            </div>
+        </form>
+    </div>
+    </div>
+
+        <!-- Movies cards-->
+        {% if movies is empty %}
+            <p>No movies found.</p>
+        {% else %}
+            <div class="row">
+                {% for movie in movies %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card" style="width: 18rem;">
+                            {% if movie.poster starts with '/' %}
+                                {# Render online image seeded with TmdbService #}
+                                    <img src="https://image.tmdb.org/t/p/w500{{ movie.poster }}" alt="{{ movie.title }} poster">
+                            {% else %}
+                                {# Render local image #}
+                                    <img src="{{ asset('uploads/posters/' ~ movie.poster) }}" alt="Movie Poster">
+                            {% endif %}
+                            <div class="card-body">
+                                <h5 class="card-title" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; height: 3em; line-height: 1.5em;">{{ movie.title }}</h5>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <a href="{{ path('movie_detail', {'id': movie.id}) }}" class="btn btn-primary">View Details</a>
+                                    <div class="score-box">
+                                        {% set averageScore = movie.calculateAverageScore() %}
+                                        <p class="mb-0">Score: {{ averageScore is not null ? (averageScore|number_format(2) ~ '/5') : 'Not Rated' }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Pagination -->
+        {% if movies is defined and movies is not empty and movies.currentPageNumber is defined %}
+            <nav aria-label="Page navigation" class="d-flex justify-content-center">
+                <ul class="pagination">
+                    {% if movies.getCurrentPageNumber() > 1 %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ path('home', {'page': movies.getCurrentPageNumber() - 1, 'search': search}) }}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                    {% for page in 1..movies.getPageCount() %}
+                        <li class="page-item{% if page == movies.getCurrentPageNumber() %} active{% endif %}">
+                            <a class="page-link" href="{{ path('home', {'page': page, 'search': search}) }}">{{ page }}</a>
+                        </li>
+                    {% endfor %}
+                    {% if movies.getCurrentPageNumber() < movies.getPageCount() %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ path('home', {'page': movies.getCurrentPageNumber() + 1, 'search': search}) }}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    </div>
+
+{% endblock %}
+{% block javascripts %}
+{{ parent() }}
+
+    {# Clear the search input box after submit button is clicked #}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelector('input[name="search"]').value = '';
+        });
+    </script>
+
+{% endblock %}

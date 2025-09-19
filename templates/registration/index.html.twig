@@ -1,0 +1,40 @@
+{% extends 'layout.html.twig' %}
+
+{% block layout_title %}registration{% endblock %}
+
+{% block content %}
+
+    <div style="display: grid; place-items: center; height: 60vh;">
+        <h1>Register</h1>
+
+        {{ form_start(registrationForm, {'attr': {'class': 'row g-3'}}) }}
+        <div class="col-md-12">
+            <div class="col-md-12" style="margin-bottom: 25px;">
+                {{ form_label(registrationForm.name) }}
+                {{ form_widget(registrationForm.name, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(registrationForm.name) }}
+            </div>
+            <div class="col-md-12" style="margin-bottom: 25px;">
+                {{ form_label(registrationForm.email) }}
+                {{ form_widget(registrationForm.email, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(registrationForm.email) }}
+            </div>
+            <div class="col-md-12" style="margin-bottom: 25px;">
+                {{ form_label(registrationForm.plainPassword.first) }}
+                {{ form_widget(registrationForm.plainPassword.first, {'attr': {'class': 'form-control'}}) }}
+                <small class="form-text text-muted">Minimum 8 characters.</small>
+                {{ form_errors(registrationForm.plainPassword.first) }}
+            </div>
+            <div class="col-md-12" style="margin-bottom: 25px;">
+                {{ form_label(registrationForm.plainPassword.second) }}
+                {{ form_widget(registrationForm.plainPassword.second, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(registrationForm.plainPassword.second) }}
+            </div>
+            <div class="col-12" style="margin-bottom: 25px;">
+                <button class="btn btn-primary" type="submit">Register</button>
+            </div>
+            {{ form_end(registrationForm) }}
+
+        </div>
+    </div>
+{% endblock %}

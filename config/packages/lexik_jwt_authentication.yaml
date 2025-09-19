@@ -1,0 +1,15 @@
+lexik_jwt_authentication:
+    # The private key
+    secret_key: '%env(resolve:JWT_SECRET_KEY)%'
+    # The public key
+    public_key: '%env(resolve:JWT_PUBLIC_KEY)%'
+    # The passphrase
+    pass_phrase: '%env(JWT_PASSPHRASE)%'
+    # Token Time to Live (in seconds)
+    token_ttl: 300 # 5 minutes
+
+
+when@dev:
+    lexik_jwt_authentication:
+        # Token Time to Live (in seconds) for dev environment
+        token_ttl: 43200 # 12h

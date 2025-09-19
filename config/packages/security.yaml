@@ -1,0 +1,146 @@
+security:
+    enable_authenticator_manager: true
+    # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+    # https://symfony.com/doc/current/security.html#loading-the-user-the-user-
+    # A user provider is responsible for loading user details that are necessary for security,
+    # such as for authentication and authorization.
+    providers:
+        app_user_provider:
+            # Indicates that the user provider will use a database entity to load user details.
+            # Symfony will use Doctrine ORM to retrieve user information from the database.
+            entity:
+                # the class of the entity that represents users
+                class: App\Entity\User
+                # The property on the User entity that is used to load the user from the database.
+                property: email
+
+
+    # DEFINE FIREWALLS: Defines the security firewalls that are used to protect
+    firewalls:
+        dev:
+            # Defines the part of the site that is protected by the firewall
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            # Turns on/off security for this part of the site
+            security: false
+
+
+        # LOGIN FIREWALL: Used to authenticate user credentials and generate a JWT token
+        login:
+            pattern: ^/api/login
+            stateless: true
+            json_login:
+                check_path: /api/login_check
+                success_handler: lexik_jwt_authentication.handler.authentication_success
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
+
+
+
+        # REFRESH TOKEN FIREWALL: Used to refresh the JWT token
+        refresh_token:
+            pattern: ^/api/token/refresh
+            stateless: true
+            refresh_jwt:
+                check_path: /api/token/refresh
+
+        api:
+            pattern:   ^/api
+            stateless: true
+            jwt: ~
+
+
+        main:
+            # Exclude the API from the main firewall
+            pattern: ^/(?!api).*
+            # When lazy is set to true, the firewall will not load the user from the session until it is actually needed.
+            # This means that if the page doesn't require any user-specific information, Symfony won't load the user object
+            # which can save some processing time.
+            lazy: true
+            #provider: app_user_provider
+            provider: app_user_provider
+            # activate different ways to authenticate
+            # https://symfony.com/doc/current/security.html#the-firewall
+            # https://symfony.com/doc/current/security/impersonating_user.html
+
+            # activate different ways to authenticate
+            #switch_user: true
+
+
+            ## FORM-BASED LOGIN AND LOGOUT FUNCTIONALITIES: specifies routes for
+            ## login form display, credential checking, and post-logout redirection.
+            # This tells symfony to use a form to log users in.
+            form_login:
+                # The route name that the login form can be found at.
+                login_path: app_login
+                # The route name that the form will post to for checking credentials.
+                check_path: app_login
+                # The request parameter that is used for the username.
+                username_parameter: _username
+                # The request parameter that is used for the password.
+                password_parameter: _password
+                # Enables CSRF protection for the form.
+                enable_csrf: true
+            # This tells symfony to use a form to log users out.
+            logout:
+                # The route name that the user can use to log out.
+                path: app_logout
+                # The route name that the user will be redirected to after logging out.
+                target: home
+
+
+
+    # DEFINE ACCESS CONTROL RULES: Defines rules for access control to
+    # different parts of the site based on the user's role and URL patterns.
+    # Easy way to control access for large sections of the site
+    # Note: Only the *first* access control that matches will be used
+
+    access_control:
+        # Allow public access to API documentation. PUT and DELETE endpoints are restricted in the Controller to ROLE_EDITOR users by using the SensioFrameworkExtraBundle [IsGranted] annotation.
+        - { path: ^/api/doc, roles: PUBLIC_ACCESS }
+        # API routes - Accessible by all users  (PUBLIC_ACCESS is a custom role)
+        - { path: ^/api/login, roles: PUBLIC_ACCESS }
+        - { path: ^/api/(login|token/refresh), roles: PUBLIC_ACCESS }
+        - { path: ^/api,       roles: IS_AUTHENTICATED_FULLY }
+
+
+        # Login page - Accessible by all users
+        # The $ character indicates the end of the URL, so this matches only the /login URL
+        - { path: ^/login$, roles: PUBLIC_ACCESS }
+
+        # Registration page - Accessible by all users
+        - { path: ^/register$, roles: PUBLIC_ACCESS }
+
+        # Home page - Accessible by all users
+        - { path: ^/$, roles: PUBLIC_ACCESS }
+
+        # Movie Detail page - Accessible by all users
+        # The regex \d+ matches one or more digits, ensuring the URL parameters are numeric
+        - { path: ^/movie/\d+/\d+$, roles: PUBLIC_ACCESS }
+
+        # Add Review page - Restricted to authenticated users
+        # This ensures only logged-in users can access the add review functionality
+        - { path: ^/movie/\d+/add-review$, roles: IS_AUTHENTICATED_FULLY }
+
+        # Logout - Restricted to authenticated users
+        - { path: ^/logout$, roles: IS_AUTHENTICATED_FULLY }
+
+        # Admin area - Restricted to ROLE_EDITOR users
+        - { path: ^/review/edit/\d+$, roles: ROLE_EDITOR }
+
+        # Test Insert Movie - development-only route
+        # This is accessible only to users with ROLE_ADMIN in the 'dev' environment
+        - { path: ^/test-insert-movie$, roles: ROLE_ADMIN }
+
+when@test:
+    security:
+        password_hashers:
+            # By default, password hashers are resource intensive and take time. This is
+            # important to generate secure password hashes. In tests however, secure hashes
+            # are not important, waste resources and increase test times. The following
+            # reduces the work factor to the lowest possible values.
+            Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
+                algorithm: auto
+                cost: 4
+                time_cost: 3
+                memory_cost: 10

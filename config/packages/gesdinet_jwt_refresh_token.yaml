@@ -1,0 +1,21 @@
+gesdinet_jwt_refresh_token:
+    refresh_token_class: App\Entity\RefreshToken
+    # Especially TTL (time to live) in seconds for the refresh token
+    ttl: 7200 # 2h in seconds
+    # Specify that the refresh token is a single use token
+    single_use: true
+
+    # Use cookies for the refresh token
+    cookie:
+        # Enable the cookie
+        enabled: true
+        # remove the refresh token from the body of the response
+        remove_token_from_body: true
+        # Cookie parameters
+        http_only: true # The cookie is only accessible through the HTTP protocol
+        same_site: strict # The cookie is sent only to the same site
+        secure: true # The cookie is only sent over HTTPS
+        path: /api/token # The cookie is only sent to the /api/token path
+        domain: null # The cookie is sent to the domain of the request
+
+

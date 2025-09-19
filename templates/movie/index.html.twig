@@ -1,0 +1,326 @@
+{% extends 'layout.html.twig' %}
+
+{% block layout_title %}Movie Details{% endblock %}
+
+{% block content %}
+
+
+symfony se
+    <!-- Flash Messages for successfully sent reviews-->
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success flash-message">
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    <!-- Movie Details -->
+    <div class="container mt-4" style="padding-top: 10px;">
+        <div class="row">
+
+            {% if movie.poster starts with '/' %}
+                {# Render online image with url provided by TmdbService #}
+
+                <div class="col-md-4 text-center mb-3">
+                    <img src="https://image.tmdb.org/t/p/w500{{ movie.poster }}" alt="{{ movie.title }} poster" class="img-fluid" style="max-height: 400px;">
+                </div>
+
+
+
+                {% elseif movie.poster starts with 'http' %}
+                {# Render online image with url provided by user #}
+                <div class="col-md-4">
+                    <img src="{{ movie.poster }}" alt="{{ movie.title }} poster" class="img-fluid" style="max-height: 400px;">
+                </div>
+
+            {% else %}
+                {# Render local image uploaded by user#}
+                <div class="col-md-4">
+                    <img src="{{ asset('uploads/posters/' ~ movie.poster) }}" alt="Movie Poster" class="img-fluid" style="max-height: 400px;">
+                </div>
+
+            {% endif %}
+
+
+            <div class="col-md-8">
+                <h2>{{ movie.title }}</h2>
+
+
+                <div style="display: none">
+                    <p><strong>Tmdb ID:</strong> {{ movie.imdbId }}</p>
+                </div>
+
+
+                <div>
+                    <p><strong>Running Time:</strong> {{ movie.runningTime }} minutes</p>
+                </div>
+
+                <p><strong>Directors:</strong> {{ movie.directors|join(', ') }}</p>
+
+
+                <div style="max-height: 150px; overflow-y: auto;">
+                    <p><strong>Actors:</strong> {{ movie.actors|join(', ') }}</p>
+                </div>
+
+
+                <div id="movie-overview" style="max-height: 150px; min-height: 150px; padding-top: 20px; position: relative;">
+                    <p><strong>Overview:</strong> <span id="overview-text">{{ movie.overview }}</span></p>
+                </div>
+
+
+                {# creates a hidden field to store the initial value of the overview when the page loads #}
+                <span id="initial_overview" style="display: none;">{{ movie.overview }}</span>
+
+
+                 <div class="d-flex justify-content-end">
+                    <label for="language-selector" class="form-label"><strong></strong></label>
+                    <select id="language-selector" class="form-select" style="width: 200px;">
+                        <option selected value="">Translate Overview</option>
+
+                        <option value="German">German</option>
+                        <option value="Chinese">Chinese</option>
+                        <option value="Spanish">Spanish</option>
+                        <option value="Polish">Polish</option>
+                        <option value="French">French</option>
+                        <option value="Arabic">Arabic</option>
+                        <option value="English">English</option>
+
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        {# YouTube Trailer Button #}
+        {% if youtubeId %}
+            <button type="button" style="margin-left: 150px" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#youtubeModal">
+                Watch Trailer
+            </button>
+        {% else %}
+            <p style="margin-left: 150px">Trailer not available.</p>
+        {% endif %}
+
+
+        {# add a visiblehorizontal line spanning all accross the screen #}
+        <hr style="width: 100%; color: black; height: 1px; background-color:black; margin-top: 20px; margin-bottom: 20px;">
+
+        <!-- Reviews -->
+        <div class="reviews-section mt-5">
+            <h3 class="text-center">Reviews</h3>
+        </div>
+        {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+            <div class="d-flex justify-content-end">
+                <a href="{{ path('add_review', {'id': movie.id}) }}" class="btn btn-secondary">Add Review</a>
+            </div>
+        {% endif %}
+
+            {% for review in reviews %}
+
+                <div class="review">
+                    <h4>{{ review.reviewTitle }}</h4>
+                    <p><strong>{{ review.user.name }}:</strong> {{ review.reviewText }}</p>
+                    <p>Reviewed on: {{ review.date|date('Y-m-d H:i') }}</p>
+                    <p>Score: {{ review.score }}</p>
+                    <!-- Edit Review Button for Editors -->
+                    {% if is_granted('ROLE_EDITOR') %}
+                        <a href="{{ path('edit_review', {'id': review.id}) }}" class="btn btn-primary">Edit Review</a>
+                    {% endif %}
+                </div>
+
+            {% else %}
+                <p>No reviews yet.</p>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if reviews is defined and reviews is not empty %}
+            <nav aria-label="Review navigation">
+                <ul class="pagination justify-content-center">
+                    {% if reviews.currentPageNumber > 1 %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ path('movie_detail', {'id': movie.id, 'page': reviews.currentPageNumber - 1}) }}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                    {% for page in 1..reviews.getPageCount() %}
+                        <li class="page-item{% if page == reviews.currentPageNumber %} active{% endif %}">
+                            <a class="page-link" href="{{ path('movie_detail', {'id': movie.id, 'page': page}) }}">{{ page }}</a>
+                        </li>
+                    {% endfor %}
+                    {% if reviews.currentPageNumber < reviews.getPageCount() %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ path('movie_detail', {'id': movie.id, 'page': reviews.currentPageNumber + 1}) }}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+
+
+
+
+    <!-- YouTube Video Modal -->
+    <div class="modal fade" id="youtubeModal" tabindex="-1" aria-labelledby="youtubeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="youtubeModalLabel">Movie Trailer</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    {% if youtubeId %}
+                        <div class="video-container">
+                            {# Iframe player is inserted here#}
+                        </div>
+                    {% else %}
+                        <p id="noVideoMessage">Trailer not available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% endblock %}
+{% block javascripts %}
+{{ parent() }}
+
+    // Add event listener to the language selector dropdown to translate the movie overview
+    <script>
+        document.getElementById('language-selector').addEventListener('change', function() {
+            // Get the language selector dropdown
+            const dropdown = document.getElementById('language-selector');
+            // Get the selected language
+            const selectedLanguage = this.value;
+            // Get the initial overview text
+            const sourceText = document.getElementById('initial_overview').innerText;
+
+
+            // Get the overview container
+            const overviewContainer = document.getElementById('movie-overview');
+            // Create a spinner element to show loading indicator
+            const spinnerHtml = '<div id="overview-spinner-container" style="display: flex; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255, 255, 255, 0.75); z-index: 10; justify-content: center; align-items: center;"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+
+
+            if(selectedLanguage && selectedLanguage!== 'English') {
+                // Disable the dropdown to prevent multiple requests
+                dropdown.disabled = true;
+                // Add the spinner to the overview container
+                overviewContainer.insertAdjacentHTML('beforeend', spinnerHtml);
+
+
+
+                fetch('/translate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        text: sourceText,
+                        language: selectedLanguage
+                    })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+
+                        // Remove the spinner
+                        const spinnerContainer = document.getElementById('overview-spinner-container');
+                        spinnerContainer.parentNode.removeChild(spinnerContainer);
+
+
+                        // Re-enable the dropdown
+                        dropdown.disabled = false;
+
+                        // If the response contains the translated text, update the overview container
+                        if(data.response) {
+
+
+                            // Sanitize the response text
+
+                            const sanitizedText = data.response
+                                .replace(/Translation: ?/gi, ' ')
+                                .replace(/Translated From English ?/gi, ' ')
+                                .replace(/Translation[^:]*: ?/g, ' ')
+                                .replace(/Original Language: English[ \n]/gi, ' ')
+                                .replace(/The language is in English[ \n]/gi, ' ')
+
+                                .trim();
+
+
+                            // Update the overview text
+                            //document.getElementById('overview-text').innerText = data.response;
+                            document.getElementById('overview-text').innerText = sanitizedText;
+                            // Set the dropdown value to the first option
+                            dropdown.value = '';
+
+                            // Handle errors in the response
+                        } else if(data.error) {
+                            // log the error to the console
+                            console.error('Translation error:', data.error);
+                        }
+                    })
+                    // Handle fetch errors
+                    .catch(error => {
+                        // Remove the spinner
+                        const spinnerContainer = document.getElementById('overview-spinner-container');
+                        if(spinnerContainer) spinnerContainer.parentNode.removeChild(spinnerContainer);
+
+                        // Re-enable the dropdown
+                        dropdown.disabled = false;
+
+                        // Log the error to the console
+                        console.error('Error translating text:', error);
+                    });
+            }else {
+                // If the selected language is English, reset the overview text to the initial value
+                document.getElementById('overview-text').innerText = sourceText;
+                // Set the dropdown value to the first option
+                dropdown.value = '';
+            }
+        });
+
+    </script>
+
+    // Add event listeners to the YouTube modal to insert and remove the iframe when the modal is shown and hidden
+    <script>
+        // Add event listeners to the YouTube modal to insert and remove the iframe when the modal is shown and hidden
+        document.addEventListener('DOMContentLoaded', (event) => {
+            // Get the YouTube modal and the modal body
+            const youtubeModal = document.getElementById('youtubeModal');
+            // Get the modal body
+            const youtubeModalBody = youtubeModal.querySelector('.modal-body');
+            // Get the YouTube video ID
+            let iframeHtml = '<iframe width="100%" height="315" src="https://www.youtube.com/embed/{{ youtubeId }}?autoplay=1" frameborder="0" allow="autoplay; fullscreen"></iframe>';
+            // Add event listeners to the modal
+            youtubeModal.addEventListener('show.bs.modal', function (e) {
+                // Insert the iframe when the modal opens
+                youtubeModalBody.innerHTML = iframeHtml;
+            });
+            // Add event listeners to the modal hide event
+            youtubeModal.addEventListener('hide.bs.modal', function (e) {
+                // Remove the iframe when the modal closes
+                youtubeModalBody.innerHTML = '';
+            });
+        });
+
+    </script>
+
+{% endblock %}

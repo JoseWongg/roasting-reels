@@ -1,0 +1,39 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}Edit/Delete Review{% endblock %}
+
+{% block content%}
+
+    <div style="display: grid; place-items: center; height: 60vh;">
+        <h1>Edit/Delete Review</h1>
+
+        {{ form_start(form, {'attr': {'class': 'row g-3'}}) }}
+        <div class="col-md-12">
+            <div class="col-md-12" style="margin-bottom: 25px;">
+                {{ form_label(form.reviewTitle) }}
+                {{ form_widget(form.reviewTitle, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.reviewTitle) }}
+            </div>
+            <div class="col-md-12" style="margin-bottom: 25px;">
+                {{ form_label(form.reviewText) }}
+                {{ form_widget(form.reviewText, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.reviewText) }}
+            </div>
+
+            <div class="col-md-12" style="margin-bottom: 25px;">
+            {{ form_row(form.save) }}
+            </div>
+
+            <div class="col-md-12" style="margin-bottom: 25px;">
+            {{ form_row(form.delete) }}
+            </div>
+
+            {{ form_end(form) }}
+
+            <div class="col-12" style="margin-bottom: 25px;">
+                <a href="{{ path('movie_detail', {'id': movieId}) }}" class="btn btn-secondary">Go Back</a>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

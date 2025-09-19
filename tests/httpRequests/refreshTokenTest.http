@@ -1,0 +1,2 @@
+// Test the refresh token mechanism. It should responf with a new access token.
+POST http://localhost:8000/api/token/refresh
