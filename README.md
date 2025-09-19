@@ -1,6 +1,6 @@
-# Roasting-Reels — Developer README
+# Roasting-Reels — README
 
-Web application for **movie cataloging and reviews**. Users can browse or add movies, write reviews, and view trailers. The app integrates with **TMDB API** for movie data and trailers, and uses **OpenAI GPT-4** for overview translations.
+Web application for **movie cataloguing and reviews**. Users can browse or add movies, write reviews, and view trailers. The app integrates with **TMDB API** for movie data and trailers, and uses **OpenAI GPT-4** for movie synopsis translations to different languages.
 
 > Tech stack: **Symfony 6.x (PHP)**, **MySQL** with **Doctrine ORM**, **Twig**, **FOSRestBundle + JMS Serializer** for REST API, **LexikJWT + GesdinetJWT** for authentication, **GuzzleHTTP**, deployed on a Symfony environment.
 
@@ -11,7 +11,7 @@ Web application for **movie cataloging and reviews**. Users can browse or add mo
 - **Review system** with role-based permissions.  
 - **REST API** with serialization groups for movies & reviews.  
 - **JWT authentication & refresh tokens**.  
-- **Overview translation** using OpenAI GPT-4 API.  
+- **Synopsis translation** using OpenAI GPT-4 API.  
 
 ## Repository layout (key folders)
 
@@ -114,4 +114,9 @@ Add feature and integration tests in the `tests/` folder.
 
 ## Authorship & Contact
 Developed by **Jose Wong**  
-j.wong@mail.com
+j.wong@mail.com  
+https://www.linkedin.com/in/jose-wongg  
+https://github.com/JoseWongg  
+
+## License
+MIT — see the [LICENSE](LICENSE) file for details.
