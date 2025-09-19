@@ -60,8 +60,6 @@ php bin/console doctrine:migrations:migrate -n
 symfony serve   # or php -S 127.0.0.1:8000 -t public
 ```
 
-Visit **http://127.0.0.1:8000**
-
 ## Configuration
 
 - `DATABASE_URL` — MySQL DSN  
